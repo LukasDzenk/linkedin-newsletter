@@ -1,0 +1,52 @@
+services:
+    - type: web
+      name: backend-fastify-template
+      runtime: docker
+      repo: https://github.com/LukasDzenk/backend-fastify-template.git
+      branch: main
+      rootDir: .
+      region: frankfurt # oregon, frankfurt, ohio, singapore
+      plan: free # free, starter, standard, etc.
+      # Note: specify one: numInstances or scaling
+      numInstances: 1
+      # scaling:
+      #   minInstances: 1
+      #   maxInstances: 1
+      #   targetMemoryPercent: 70 # optional if targetCPUPercent is set
+      #   targetCPUPercent: 70 # optional if targetMemory is set
+      dockerfilePath: ./docker/app/Dockerfile
+      # preDeployCommand: bundle exec ruby migrate.rb
+      # buildCommand: pnpm i --frozen-lockfile && pnpm build
+      # startCommand: pnpm start:prod
+      autoDeploy: true
+      healthCheckPath: /health-check
+      envVars:
+          - key: PORT
+            value: 3000
+          - key: SERVER_INSTANCE_ID
+            value: backend-fastify-template-instance-1
+          # - fromGroup: env-variable-group-name
+      buildFilter:
+          # paths:
+          # - src
+          ignoredPaths:
+              - README.md
+              - .gitignore
+              - .git
+# databases:
+#   - name: fastify-template-prod-db-1
+#     databaseName: fastify-template-prod-db-1
+#     region: frankfurt
+#     plan: free
+#     user: user-1
+#     # ipAllowList: [] # only allow internal connections
+#     # ipAllowList: # optional (defaults to allow all)
+#     #   - source: 203.0.113.4/30
+#     #     description: office
+#     #   - source: 198.51.100.1
+#     #     description: home
+#     # readReplicas: # optional (defaults to no replicas)
+#     #   - name: prod-replica
+#     # plan: pro
+#     # highAvailability: # optional
+#       # enabled: true

@@ -1,0 +1,36 @@
+# Ignore the virtual environment
+venv
+
+# Ignore the .idea folder
+.idea
+
+# Ignore the .vscode folder
+.vscode
+
+# Ignore dependencies
+node_modules
+
+# Ignore the build folder
+dist
+
+# Ignore the coverage folder
+coverage
+
+# Ignore the git and cache folders
+.git
+.cache
+
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+README.md
+readme.md
+LICENSE
+Makefile
+helm-charts
+.env
+.editorconfig
+.idea
+coverage*

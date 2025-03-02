@@ -1,0 +1,52 @@
+version: '3.9'
+
+# Notes:
+# - nestjs-1 service is ran from the Dockerfile in the app directory with additional settings
+# - dev-db-1 service is a PostgreSQL database that does not have a Dockerfile because it
+# uses the official image without any modifications
+# - dev-db-1-pgadmin service is a pgAdmin4 container that is used to manage the dev-db-1 database
+# it also uses the official image without any modifications
+
+services:
+    server-1:
+        build:
+            context: . # Assuming that the repo was cloned locally
+            dockerfile: ./docker/app/Dockerfile
+        ports:
+            - '3000:3000'
+        healthcheck:
+            # Note: ensure that the distro has curl installed or use another tool,
+            # otherwise the healthcheck will fail
+            test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+            interval: 20s
+            timeout: 10s
+            retries: 3
+
+    dev-db-1:
+        image: postgres
+        container_name: dev-db-1-container
+        environment:
+            POSTGRES_DB: dev-db-1
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+        # Note: it's unnecessary to expose the port if the service is accessed only
+        # by other services in the same network within Docker (like the server-1 service)
+        ports:
+            - '5432:5432'
+        volumes:
+            - dev-db-1-data:/var/lib/postgresql/data
+
+    dev-db-1-pgadmin:
+        image: dpage/pgadmin4
+        container_name: dev-db-1-pgadmin-container
+        environment:
+            PGADMIN_DEFAULT_EMAIL: root@gmail.com
+            PGADMIN_DEFAULT_PASSWORD: root
+        ports:
+            - '5050:80'
+        volumes:
+            - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+    dev-db-1-data:
+    pgadmin-data:

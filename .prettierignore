@@ -1,0 +1,10 @@
+dist/
+src/public/**/build/
+coverage/
+*.html
+*.log
+*.map
+*.pid
+*.seed
+*.pid.lock
+*.hbs

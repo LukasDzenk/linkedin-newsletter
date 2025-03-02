@@ -1,0 +1,29 @@
+# CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD) # Check current branch name
+# if [ "$CURRENT_BRANCH" != "main" ]; then
+#   echo "Husky scripts are only run on the main branch."
+#   exit 0
+# fi
+
+# Check for test comments
+TEST_COMMENT="!TEST"
+if grep -r "$TEST_COMMENT" --exclude-dir=node_modules --exclude-dir=.husky --exclude-dir=dist --exclude-dir=.git .; then
+  echo "Found test comment in code: $TEST_COMMENT"
+  echo "Aborting commit."
+  exit 1
+fi
+
+# * Temporarily disabled
+# pnpm lint
+# pnpm build
+# pnpm test
+# pnpm format
+
+TYPE_CHECK_EXIT_CODE=$?
+
+if [ $TYPE_CHECK_EXIT_CODE -eq "0" ]; then
+  echo "TYPE CHECK - SUCCESS"
+else
+  echo "TYPE CHECK - FAILED"
+  echo "Aborting commit."
+  exit 1
+fi

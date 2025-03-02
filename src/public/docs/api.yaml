@@ -1,0 +1,725 @@
+openapi: 3.0.0
+info:
+    version: 1.0.0
+    title: Ratings API
+    description: API for retrieving ratings for a hotel
+servers:
+    - url: http://localhost:3000/api/v1
+paths:
+    /ratings:
+        post:
+            summary: Get hotel ratings (queue)
+            description: Retrieve ratings for a hotel. If scraped data for the given hotel exists in the database, the data is returned immediately. If no scraped data is found or if the latest hotel rating that was scraped is old, a job to scrape will be added to the scraping queue.
+            operationId: getRatings
+            parameters:
+                - name: sort
+                  in: query
+                  description: Sort order for the ratings (ascending or descending)
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - desc
+                          - asc
+                      default: desc
+                - name: limit
+                  in: query
+                  description: Maximum number of ratings to return
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 10
+                - name: offset
+                  in: query
+                  description: Number of ratings to skip
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 1000
+                      default: 0
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                hotelPageUrl:
+                                    description: URL of the hotel page
+                                    type: string
+                                    example: https://www.booking.com/hotel/ee/hestia-ilmarine.html?aid=304142
+                                id:
+                                    description: ID of the hotel. Mandatory to include *ONLY* when source provider is Agoda.
+                                    type: string
+                                    example: '123456'
+                                rating:
+                                    description: Rating of the hotel
+                                    type: number
+                                    nullable: true
+                                    minimum: 0
+                                    maximum: 10
+                                    example: 8.21
+                                reviewCount:
+                                    description: Number of reviews of the hotel
+                                    type: integer
+                                    nullable: true
+                                    minimum: 0
+                                    example: 4332
+                                hotelName:
+                                    description: Name of the hotel
+                                    type: string
+                                    nullable: true
+                                    example: Hestia Hotel Ilmarine
+                                coordinates:
+                                    description: Coordinates of the hotel.
+                                    type: object
+                                    nullable: true
+                                    properties:
+                                        latitude:
+                                            type: number
+                                            format: double
+                                            description: Latitude of the hotel location
+                                            minimum: -90
+                                            maximum: 90
+                                        longitude:
+                                            type: number
+                                            format: double
+                                            description: Longitude of the hotel location
+                                            minimum: -180
+                                            maximum: 180
+                                    required:
+                                        - latitude
+                                        - longitude
+                            required:
+                                - hotelPageUrl
+            responses:
+                200:
+                    description: Ratings data
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    ratings:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                weightedAverageRating:
+                                                    type: number
+                                                    example: 8.21
+                                                createdAt:
+                                                    type: string
+                                                    format: date-time
+                                                providers:
+                                                    type: object
+                                                    properties:
+                                                        booking:
+                                                            type: object
+                                                            properties:
+                                                                rating:
+                                                                    type: number
+                                                                    example: 9.2
+                                                                reviewCount:
+                                                                    type: integer
+                                                                    example: 433
+                '400':
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '404':
+                    description: Requested resource was not found
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+    /ratings/live:
+        post:
+            summary: Get hotel ratings (live)
+            description: Retrieve ratings for a hotel. If a rating is not found in the database, then initialize a scraping session during which ratings will be scraped live (using the extension as a proxy). Follow up requests should be sent to the `/live/session` endpoint.
+            operationId: getLiveRatings
+            parameters:
+                - name: sort
+                  in: query
+                  description: Sort order for the ratings (ascending or descending)
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - desc
+                          - asc
+                      default: desc
+                - name: limit
+                  in: query
+                  description: Maximum number of ratings to return
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 10
+                - name: offset
+                  in: query
+                  description: Number of ratings to skip
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 1000
+                      default: 0
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                hotelPageUrl:
+                                    description: URL of the hotel page
+                                    type: string
+                                    example: https://www.booking.com/hotel/ee/hestia-ilmarine.html?aid=304142
+                                id:
+                                    description: ID of the hotel. Mandatory to include *ONLY* when source provider is Agoda.
+                                    type: string
+                                    example: '123456'
+                                rating:
+                                    description: Rating of the hotel. If provider is not Agoda or Booking, then a valid rating, review count and hotel name and coordinates must be provided.
+                                    type: number
+                                    minimum: 0
+                                    maximum: 10
+                                    example: 8.21
+                                reviewCount:
+                                    description: Number of reviews of the hotel. If provider is not Agoda or Booking, then a valid rating, review count and hotel name and coordinates must be provided.
+                                    type: integer
+                                    minimum: 0
+                                    example: 4332
+                                hotelName:
+                                    description: Name of the hotel. If provider is not Agoda or Booking, then a valid rating, review count and hotel name and coordinates must be provided.
+                                    type: string
+                                    example: Hestia Hotel Ilmarine
+                                coordinates:
+                                    description: Coordinates of the hotel. If provider is not Agoda, Booking or Expedia then a valid rating, review count and hotel name and coordinates must be provided.
+                                    type: object
+                                    nullable: true
+                                    properties:
+                                        latitude:
+                                            type: number
+                                            format: double
+                                            description: Latitude of the hotel location
+                                            minimum: -90
+                                            maximum: 90
+                                        longitude:
+                                            type: number
+                                            format: double
+                                            description: Longitude of the hotel location
+                                            minimum: -180
+                                            maximum: 180
+                                    required:
+                                        - latitude
+                                        - longitude
+                            required:
+                                - hotelPageUrl
+            responses:
+                200:
+                    description: Ratings data
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    hotel:
+                                        type: object
+                                        properties:
+                                            quality:
+                                                type: object
+                                                properties:
+                                                    tags:
+                                                        type: array
+                                                        items:
+                                                            type: object
+                                                            properties:
+                                                                text:
+                                                                    type: string
+                                                                    nullable: true
+                                                                    enum:
+                                                                        - Increasing
+                                                                        - Decreasing
+                                                                        - Steady
+                                            providers:
+                                                type: object
+                                                properties:
+                                                    agoda:
+                                                        type: object
+                                                        properties:
+                                                            reviewsUrl:
+                                                                type: string
+                                                                nullable: true
+                                                    booking:
+                                                        type: object
+                                                        properties:
+                                                            reviewsUrl:
+                                                                type: string
+                                                                nullable: true
+                                                    expedia:
+                                                        type: object
+                                                        properties:
+                                                            reviewsUrl:
+                                                                type: string
+                                                                nullable: true
+                                                    google:
+                                                        type: object
+                                                        properties:
+                                                            reviewsUrl:
+                                                                type: string
+                                                                nullable: true
+                                                    tripadvisor:
+                                                        type: object
+                                                        properties:
+                                                            reviewsUrl:
+                                                                type: string
+                                                                nullable: true
+                                    ratings:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                weightedAverageRating:
+                                                    type: number
+                                                    example: 8.21
+                                                createdAt:
+                                                    type: string
+                                                    format: date-time
+                                                providers:
+                                                    type: object
+                                                    properties:
+                                                        booking:
+                                                            type: object
+                                                            properties:
+                                                                rating:
+                                                                    type: number
+                                                                    example: 9.2
+                                                                reviewCount:
+                                                                    type: integer
+                                                                    example: 433
+                '202':
+                    description: Scraping session is active, server is requesting client to act as a proxy
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    sessionId:
+                                        type: string
+                                        example: 'ac0ac9da-51c4-49e1-bb6d-44a360dfe6b6'
+                                    requests:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                id:
+                                                    type: string
+                                                    example: agoda:getHotelIds
+                                                axiosRequest:
+                                                    type: object
+                                                    example: {}
+                '400':
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '404':
+                    description: Requested resource was not found
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+    /ratings/live/session/{sessionId}:
+        post:
+            summary: Live scraping session
+            description: Keep sending data requested by the server until the scraping session is completed. Rating will be returned once all of the needed information is given to the server and processed.
+            operationId: liveRatingsSession
+            parameters:
+                - in: path
+                  name: sessionId
+                  description: Unique identifier of the scraping session
+                  required: true
+                  schema:
+                      type: string
+                      example: scrapingSession:08e1d600-f15e-4ee7-8595-8f6f4717fd12
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                requestedHtml:
+                                    description: An array of objects containing identifier and axiosResponse
+                                    type: array
+                                    items:
+                                        type: object
+                                        properties:
+                                            id:
+                                                description: Identifier for the request
+                                                type: string
+                                                example: agoda:getHotelIds
+                                            axiosResponse:
+                                                description: Axios response object
+                                                type: object
+                                        required:
+                                            - identifier
+                                            - axiosResponse
+                            required:
+                                - requestedHtml
+            responses:
+                200:
+                    description: Ratings data
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    ratings:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                weightedAverageRating:
+                                                    type: number
+                                                    example: 8.21
+                                                createdAt:
+                                                    type: string
+                                                    format: date-time
+                                                providers:
+                                                    type: object
+                                                    properties:
+                                                        booking:
+                                                            type: object
+                                                            properties:
+                                                                rating:
+                                                                    type: number
+                                                                    example: 9.2
+                                                                reviewCount:
+                                                                    type: integer
+                                                                    example: 433
+                '202':
+                    description: Scraping session is active, server is requesting client to act as a proxy
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    sessionId:
+                                        type: string
+                                        example: 'ac0ac9da-51c4-49e1-bb6d-44a360dfe6b6'
+                                    requests:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                id:
+                                                    type: string
+                                                    example: agoda:getHotelIds
+                                                axiosRequest:
+                                                    type: object
+                                                    example: {}
+                '400':
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '404':
+                    description: Requested resource was not found
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '429':
+                    description: Too many requests - scraping session request limit exceeded
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+        get:
+            summary: Get static data about the providers
+            description: Retrieve static data about the providers
+            operationId: getRatingProvidersStaticData
+            responses:
+                200:
+                    description: Ratings data
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    providersStaticData:
+                                        type: object
+                                        properties:
+                                            booking:
+                                                type: object
+                                                properties:
+                                                    maxRating:
+                                                        type: integer
+                                                        example: 10
+                                                    reviewCountReliabilityThreshold:
+                                                        type: integer
+                                                        example: 10
+                '400':
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '404':
+                    description: Requested resource was not found
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+    /keywords:
+        get:
+            summary: Get keywords related to a hotel
+            description: Retrieve keywords and their sentiment count related to a specific hotel. Note that keywords are sorted by their total sentiment count in descending order.
+            operationId: getKeywords
+            parameters:
+                - in: query
+                  name: limit
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 10
+                  description: The number of keywords to retrieve
+                - in: query
+                  name: hotelPageUrl
+                  schema:
+                      type: string
+                  description: The URL of the hotel page
+                - in: query
+                  name: id
+                  schema:
+                      type: string
+                  description: The ID of the hotel. Mandatory only if the hotelPageUrl provider is Agoda.
+            responses:
+                '200':
+                    description: Keywords data
+                    headers:
+                        Cache-Control:
+                            schema:
+                                type: string
+                                default: 'public, max-age=3600'
+                            description: Cache control header with a maximum age of 1 hour (3600 seconds)
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    reviewCount:
+                                        type: integer
+                                        nullable: true
+                                        description: The total number of reviews. Note - this is a different number than the count of keywords. One review may contain multiple keywords. Returned as null if the hotel has no keywords.
+                                        example: 20
+                                    keywords:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                keywordText:
+                                                    type: string
+                                                    example: 'Air Conditioning'
+                                                sentiment:
+                                                    type: object
+                                                    properties:
+                                                        dominant:
+                                                            type: string
+                                                            enum:
+                                                                - positive
+                                                                - negative
+                                                                - neutral
+                                                        count:
+                                                            type: object
+                                                            properties:
+                                                                positive:
+                                                                    type: integer
+                                                                    example: 12
+                                                                negative:
+                                                                    type: integer
+                                                                    example: 3
+                                                                neutral:
+                                                                    type: integer
+                                                                    example: 5
+                '400':
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+    /areaSafety:
+        get:
+            summary: Get hotel area safety information
+            description: Retrieve safety information about the area around the hotel.
+            operationId: getAreaSafety
+            parameters:
+                - in: query
+                  name: hotelPageUrl
+                  schema:
+                      type: string
+                  description: The URL of the hotel page
+                - in: query
+                  name: id
+                  schema:
+                      type: string
+                  description: The ID of the hotel. Mandatory only if the hotelPageUrl provider is Agoda.
+            responses:
+                '200':
+                    description: Safety data
+                    headers:
+                        Cache-Control:
+                            schema:
+                                type: string
+                                default: 'public, max-age=3600'
+                            description: Cache control header with a maximum age of 1 hour (3600 seconds)
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    areaSafetyScore:
+                                        type: integer
+                                        nullable: true
+                                        description: Area safety score (ranging from 0 to 5). Returned as null if the hotel has no area safety score.
+                                        example: 4.29
+                '400':
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                    message:
+                                        type: string

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+    pull_request:
+    # Comment out all to disable CI pipeline
+    #     branches:
+    #       - dev
+    #       - test
+    #       - staging
+    #       - main
+
+jobs:
+    run-all-checks:
+        name: Run all checks
+        runs-on: ubuntu-latest
+        # env:
+        # PROCESS_NODE_VERSION: ${{ secrets.NODE_VERSION }}
+        steps:
+            - name: Check out repo
+              uses: actions/checkout@v3
+
+            - name: Setup node
+              uses: actions/setup-node@v3
+              with:
+                  node-version-file: 'package.json'
+                  cache: 'pnpm'
+
+            - name: Install packages
+              run: pnpm install
+
+            - name: Run prettier check
+              run: pnpm format:check
+
+            - name: Lint
+              run: pnpm lint
+
+            - name: Run tests
+              run: pnpm test
+
+            - name: Build project
+              run: pnpm build
