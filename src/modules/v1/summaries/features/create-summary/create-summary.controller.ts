@@ -34,7 +34,7 @@ export const createSummaryController: Controller<
             statusCode: StatusCodes.OK,
             body: {
                 summary: {
-                    text: '**Exploring the Future of Technology in 2024**\n\nThe upcoming year promises groundbreaking advancements in technology, shaping industries and lifestyles globally. Key insights include:\n\n- *Artificial Intelligence*: Expanding into healthcare, education, and environmental solutions.\n- *Sustainability Trends*: Green energy and carbon-neutral technologies are gaining traction.\n- *Digital Transformation*: Businesses prioritize cloud computing and cybersecurity measures.\n\nA recent survey highlights that 78% of companies plan to increase tech investments in 2024. [Read more insights](https://example.com).',
+                    text: 'Exploring the Future of Technology\n\nThe upcoming months promise groundbreaking advancements in technology, shaping industries and lifestyles globally. Key insights include:\n\n- Artificial Intelligence: Expanding into healthcare, education, and environmental solutions.\n- Sustainability Trends: Green energy and carbon-neutral technologies are gaining traction.\n- Digital Transformation: Businesses prioritize cloud computing and cybersecurity measures.\n\nA recent survey highlights that 78% of companies plan to increase tech investments in the coming quarters.',
                     topics,
                     dateFrom,
                     totalVideosCount: videosCount,

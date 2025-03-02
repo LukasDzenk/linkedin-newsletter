@@ -195,20 +195,16 @@ export const createSummary = async ({
     const combinedSummary = await vendors.openai.fetchPromptResponseRateLimited<{
         summary: string
     }>({
+        // 🔹Focus on business goals
         userPrompt: `You're a graduate level journalist writing a article LinkedIn newsletter post. Write engaging and informative summaries for each topic. Focus on key insights, trends, numbers, statistics, facts, takeaways. Use emojis sparingly.
 
 Do not include links.
 
 Only allowed formatting:
-Bold: **bold text**
-Italic: *italic text*
-Links: [Link text](URL)
 Bullet points:
 - Item 1
-- Item 2
 Numbered lists:
 1. Item 1
-2. Item 2
 Emojis
 
 ---
