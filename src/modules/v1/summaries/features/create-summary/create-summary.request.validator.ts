@@ -7,6 +7,9 @@ export const CreateSummaryRequestSchema = z.object({
     body: z
         .object({
             channelUrls: z.array(z.string().url()),
+            topics: z.array(z.string()),
+            dateFrom: z.string().datetime(),
+            totalVideosCount: z.number().min(1).optional(),
         })
         .strict(),
 })

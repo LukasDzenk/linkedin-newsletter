@@ -56,10 +56,6 @@ export interface Data {
     extra: Extra
     hasMore: boolean
     itemList: ItemList[]
-    log_pb: LogPb
-    statusCode: number
-    status_code: number
-    status_msg: string
 }
 
 export interface Extra {
@@ -71,21 +67,21 @@ export interface Extra {
 export interface ItemList {
     AIGCDescription: string
     CategoryType: number
-    HasPromoteEntry: number
     author: Author
     authorStats: AuthorStats
     backendSourceEventTracking: string
-    challenges?: Challenge[]
+    challenges: Challenge[]
     collected: boolean
     contents: Content[]
     createTime: number
     desc: string
     digged: boolean
-    diversificationId?: number
+    diversificationId: number
     duetDisplay: number
     duetEnabled: boolean
     forFriend: boolean
     id: string
+    isAd: boolean
     itemCommentStatus: number
     item_control: ItemControl
     music: Music
@@ -97,14 +93,12 @@ export interface ItemList {
     stats: Stats
     statsV2: StatsV2
     stitchDisplay: number
-    stitchEnabled?: boolean
-    textExtra?: TextExtra2[]
+    stitchEnabled: boolean
+    textExtra: TextExtra2[]
     textLanguage: string
     textTranslatable: boolean
     video: Video
-    adAuthorization?: boolean
-    isAd?: boolean
-    maskType?: number
+    videoSuggestWordsList: VideoSuggestWordsList
 }
 
 export interface Author {
@@ -154,7 +148,7 @@ export interface Challenge {
 
 export interface Content {
     desc: string
-    textExtra?: TextExtra[]
+    textExtra: TextExtra[]
 }
 
 export interface TextExtra {
@@ -162,30 +156,24 @@ export interface TextExtra {
     end: number
     hashtagName: string
     isCommerce: boolean
-    secUid?: string
     start: number
     subType: number
     type: number
-    userId?: string
-    userUniqueId?: string
 }
 
 export interface ItemControl {
     can_repost: boolean
-    can_comment?: boolean
-    can_creator_redirect?: boolean
-    can_music_redirect?: boolean
-    can_share?: boolean
 }
 
 export interface Music {
-    album?: string
+    album: string
     authorName: string
     coverLarge: string
     coverMedium: string
     coverThumb: string
     duration: number
     id: string
+    isCopyrighted: boolean
     original: boolean
     playUrl: string
     title: string
@@ -213,12 +201,9 @@ export interface TextExtra2 {
     end: number
     hashtagName: string
     isCommerce: boolean
-    secUid?: string
     start: number
     subType: number
     type: number
-    userId?: string
-    userUniqueId?: string
 }
 
 export interface Video {
@@ -240,7 +225,8 @@ export interface Video {
     originCover: string
     playAddr: string
     ratio: string
-    subtitleInfos?: SubtitleInfo[]
+    subtitleInfos: SubtitleInfo[]
+    videoID: string
     videoQuality: string
     volumeInfo: VolumeInfo
     width: number
@@ -268,12 +254,11 @@ export interface PlayAddr {
 }
 
 export interface ClaInfo {
-    captionInfos?: CaptionInfo[]
-    captionsType?: number
+    captionInfos: CaptionInfo[]
+    captionsType: number
     enableAutoCaption: boolean
     hasOriginalAudio: boolean
-    originalLanguageInfo?: OriginalLanguageInfo
-    noCaptionReason?: number
+    originalLanguageInfo: OriginalLanguageInfo
 }
 
 export interface CaptionInfo {
@@ -323,6 +308,17 @@ export interface ZoomCover {
     '960': string
 }
 
-export interface LogPb {
-    impr_id: string
+export interface VideoSuggestWordsList {
+    video_suggest_words_struct: VideoSuggestWordsStruct[]
+}
+
+export interface VideoSuggestWordsStruct {
+    hint_text: string
+    scene: string
+    words: Word[]
+}
+
+export interface Word {
+    word: string
+    word_id: string
 }

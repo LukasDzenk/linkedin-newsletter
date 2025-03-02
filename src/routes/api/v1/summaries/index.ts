@@ -6,7 +6,7 @@ import { FastifyInstance } from 'fastify'
 
 export default async function (server: FastifyInstance) {
     server.register(middlewares.correlationIdPlugin)
-    // server.register(middlewares.apiKeyAuthorizationPlugin)
+    server.register(middlewares.apiKeyAuthorizationPlugin)
     // server.register(middlewares.sendSlackAlertPlugin, {
     //     allowedHttpStatuses: [200],
     // })

@@ -53,7 +53,7 @@ const envVariablesSchema = z.object({
 
     // RESEND_API_KEY: z.string().min(1),
 
-    // REDIS_URL: z.string().url(),
+    REDIS_URL: z.string().url(),
 
     // VENDOR_GRAFANA_HOST: z.string().min(1),
     // VENDOR_GRAFANA_USER: z.string().min(1),
@@ -103,14 +103,11 @@ export const env = {
     //     LOG_LEVEL: validatedEnvVariables.LOG_LEVEL,
     //     REQ_AND_RES_LOG_LEVEL: validatedEnvVariables.REQ_AND_RES_LOG_LEVEL,
     // },
-    // databases: {
-    //     mongoDb1: {
-    //         URL: validatedEnvVariables.MONGO_DB_1_URL,
-    //     },
-    //     // redis: {
-    //     //     REDIS_URL: parsedEnvVariables.REDIS_URL,
-    //     // },
-    // },
+    databases: {
+        redis: {
+            REDIS_URL: validatedEnvVariables.REDIS_URL,
+        },
+    },
     app: {
         // 	PUBLIC_DOMAIN_NAME: validatedEnvVariables.PUBLIC_APP_DOMAIN_NAME
         // },
