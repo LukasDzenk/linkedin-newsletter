@@ -1,5 +1,5 @@
-import { CouponAlreadyExists } from './coupon-already-exists.error.js'
+import { NoResultsFound } from './no-results-found.error.js'
 
 export const errors = {
-    CouponAlreadyExists,
+    NoResultsFound,
 } as const

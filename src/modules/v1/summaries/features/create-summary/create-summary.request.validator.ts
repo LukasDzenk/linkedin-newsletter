@@ -10,6 +10,7 @@ export const CreateSummaryRequestSchema = z.object({
             topics: z.array(z.string()),
             dateFrom: z.string().datetime(),
             totalVideosCount: z.number().min(1).optional(),
+            isMockEnabled: z.boolean().optional(),
         })
         .strict(),
 })
