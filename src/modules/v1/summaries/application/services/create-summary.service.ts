@@ -1,8 +1,8 @@
 import { redisClient } from '@configs/databases/redis/redis.js'
 import { logger } from '@logger/pino.logger.js'
+import { utils } from '@utils/utils.js'
 import { llmConfig } from '@vendors/openai/llm-config.js'
 import { BooleanStructuredOutput } from '@vendors/openai/structured-outputs/boolean.structured-outputs.js'
-import { Data } from '@vendors/openai/structured-outputs/data.structured-outputs.js'
 import { structuredOutputs } from '@vendors/openai/structured-outputs/structured-outputs.js'
 import { vendors } from '@vendors/vendors.js'
 import { NoResultsFound } from '../../domain/errors/no-results-found.error.js'
@@ -235,24 +235,34 @@ export const createSummary = async ({
     logger.debug(
         `Generating final combined summary using this context: ${filteredTranscripts.join('\n\n')}`,
     )
+
     const combinedSummary = await vendors.openai.fetchPromptResponseRateLimited<{
         summary: string
     }>({
         // 🔹Focus on business goals
-        userPrompt: `You're a graduate level journalist writing a article LinkedIn newsletter post. Write engaging and informative summaries for each topic. Focus on key insights, trends, numbers, statistics, facts, takeaways. Use emojis sparingly.
+        // Reference the source of the news in the summary whenever possible.
+        userPrompt: `You're a graduate level journalist writing an article LinkedIn newsletter post.
+Your man task is to write engaging content for given news transcripts. Focus on key insights, trends, numbers, statistics, facts, takeaways.
+
+Include the following elements:
+- A single-sentence short captivating summary that captures the essence of the content
+- Key insights (in few words) formatted as bullet points
+- An engaging hook/intro that would grab a reader's attention to read further
 
 Do not include links.
 
-Only allowed formatting:
-Bullet points:
-- Item 1
-Numbered lists:
-1. Item 1
-Emojis
-
 ---
 
-Here is a good output example:
+Great output example:
+
+<example-summary>
+Each week in crypto just seems to get more action packed.
+
+→ $2B SOL unlock incoming.
+→ Ethereum rollback talks.
+→ Signs the Fed might halt QT.
+
+Here's what you missed this week 👇
 
 📌 Macro mayhem
 
@@ -265,57 +275,65 @@ Here is a good output example:
 - The dollar index (DXY) bounced back last week after Trump's aggressive tariff threats.
 - Gold, riding the uncertainty wave, shot past $2,800. 
 - Turbulent times. Safe-haven assets are flashing red. Don't blink.
+</example-summary>
 
 ---
 
-Use these news transcripts:
+Use these news transcripts for context:
 ${filteredTranscripts.join('\n\n')}`,
-        modelName: llmConfig.MODEL_NAME,
+        modelName: llmConfig.MODEL_NAMES.gpt45Preview20250227,
         temperature: llmConfig.generation.TEMPERATURE,
         structuredOutputSchema: structuredOutputs.summary,
         callerFnName: 'generateCombinedSummary',
     })
 
     logger.debug('Generating one-sentence summary, key insights, and hook')
-    const enhancedSummary = await vendors.openai.fetchPromptResponseRateLimited<Data>({
-        userPrompt: `You're a graduate level journalist writing a article LinkedIn newsletter post. Write engaging and informative summaries for each topic. Focus on key insights, trends, numbers, statistics, facts, takeaways. Use emojis sparingly.
-Add the following elements to the summary:
-- A single-sentence short captivating summary that captures the essence of the content
-- Three key insights (1-sentence, very short) formatted as bullet points
-- An engaging hook/intro sentence that would grab a reader's attention to read further
 
-For example:
-"""
-Each week in crypto just seems to get more action packed.
+    //     const enhancedSummary = await vendors.openai.fetchPromptResponseRateLimited<Data>({
+    //         userPrompt: `You're a graduate level journalist writing an article LinkedIn newsletter post.
+    // Write the following elements:
+    // - A single-sentence short captivating summary that captures the essence of the content
+    // - Three key insights (1-sentence, very short) formatted as bullet points
+    // - An engaging hook/intro sentence that would grab a reader's attention to read further
 
-→ $2B SOL unlock incoming.
-→ Ethereum rollback talks.
-→ Signs the Fed might halt QT.
+    // For example:
+    // """
+    // Each week in crypto just seems to get more action packed.
 
-Here's what you missed this week 👇
-"""
+    // → $2B SOL unlock incoming.
+    // → Ethereum rollback talks.
+    // → Signs the Fed might halt QT.
 
-Only allowed formatting:
-Bullet points:
-- Item 1
-Numbered lists:
-1. Item 1
-Emojis
+    // Here's what you missed this week 👇
+    // """
 
-Return a text with everything combined. No explanation and no agreement to do the task needed.
-You must respond with just the final text which is ready to be published.
+    // Only allowed formatting:
+    // Bullet points:
+    // - Item 1
+    // Numbered lists:
+    // 1. Item 1
+    // Emojis
 
-Summary to use:
-${combinedSummary.summary}`,
-        modelName: llmConfig.MODEL_NAME,
-        temperature: llmConfig.generation.TEMPERATURE,
-        structuredOutputSchema: structuredOutputs.data,
-        callerFnName: 'generateEnhancedSummaryElements',
-    })
+    // Return only the text. No need for explanation or agreement to do the task.
+    // You must respond with just the final text which is ready to be published.
 
-    logger.debug(`Enhanced summary generated: ${enhancedSummary.data}`)
+    // Text to use:
+    // ${combinedSummary.summary}`,
+    //         modelName: llmConfig.MODEL_NAME,
+    //         temperature: llmConfig.generation.TEMPERATURE,
+    //         structuredOutputSchema: structuredOutputs.data,
+    //         callerFnName: 'generateEnhancedSummaryElements',
+    //     })
 
-    return `${enhancedSummary.data}\n\n${combinedSummary.summary}`
+    // const finalSummary = utils.llm.replaceSymbols(
+    //     `${enhancedSummary.data}\n\n${combinedSummary.summary}`,
+    // )
+
+    const finalSummary = utils.llm.replaceSymbols(`${combinedSummary.summary}`)
+
+    logger.debug(`Final summary generated: ${finalSummary}`)
+
+    return finalSummary
 }
 
 async function checkTranscriptForTopics(transcript: string, topics: string[], videoId: string) {

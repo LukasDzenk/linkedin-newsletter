@@ -13,12 +13,11 @@ import { getCurrentDirectoryPath } from './get-current-directory-path.util.js'
 import { getHttpAgentTls1Point2 } from './get-http-agent-tls1point2.util.js'
 import { getRandomIntFromRange } from './get-random-int-from-range.util.js'
 import { getRandomPlatformHeaderOs } from './get-random-platform-header-os.util.js'
-import { increaseIndexSensitivity } from './increase-index-sensitivity.util.js'
 import { invertIndex } from './invert-index.util.js'
 import { isDateOlderThanXDays } from './is-date-older-than-x-days.util.js'
 import { keepOnlyWordsAndSpacesFromString } from './keep-only-words-and-spaces-from-string.util.js'
+import { llm } from './llm/llm.js'
 import { logMessageToFile } from './log-message-to-file.util.js'
-import { mapToIndex } from './map-to-index.util.js'
 import { millisecondsToSeconds } from './milliseconds-to-seconds.util.js'
 import { mongodb } from './mongodb/mongodb.js'
 import { pickRandomCharacter } from './pick-random-character.util.js'
@@ -38,13 +37,14 @@ export const utils = {
     mongodb,
     zod,
 
+    llm,
+
     generateShortUuid,
     exitManager,
     exitProcess,
     serializeError,
     convertSymbolsToUnicode,
     logMessageToFile,
-    mapToIndex,
     getHttpAgentTls1Point2,
     callFunctionAtRandomIntervals,
     callFunctionEveryXSeconds,
@@ -56,7 +56,6 @@ export const utils = {
     getRandomIntFromRange,
     getCurrentDirectoryPath,
     getRandomPlatformHeaderOs,
-    increaseIndexSensitivity,
     invertIndex,
     isDateOlderThanXDays,
     keepOnlyWordsAndSpacesFromString,

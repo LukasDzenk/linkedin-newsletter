@@ -14,6 +14,7 @@ export const llmConfig = {
         gpt4oMini: 'gpt-4o-mini',
         gpt4o20240806: 'gpt-4o-2024-08-06',
         gpt4o20241120: 'gpt-4o-2024-11-20',
+        gpt45Preview20250227: 'gpt-4.5-preview-2025-02-27',
         gemini15Pro: 'gemini-1.5-pro',
         gemini15Flash: 'gemini-1.5-flash',
         gemini20FlashExp: 'gemini-2.0-flash-exp',
