@@ -248,12 +248,9 @@ Include the following elements:
 - A single-sentence short captivating summary that captures the essence of the content
 - Key insights (in few words) formatted as bullet points
 - An engaging hook/intro that would grab a reader's attention to read further
+- Bullet point summary for each category of the news in few words
 
 Do not include links.
-
----
-
-Great output example:
 
 <example-summary>
 Each week in crypto just seems to get more action packed.
@@ -276,8 +273,6 @@ Here's what you missed this week 👇
 - Gold, riding the uncertainty wave, shot past $2,800. 
 - Turbulent times. Safe-haven assets are flashing red. Don't blink.
 </example-summary>
-
----
 
 Use these news transcripts for context:
 ${filteredTranscripts.join('\n\n')}`,
