@@ -8,7 +8,7 @@
 
 ### Notes
 
--   If `/public` directory is needed in build output - copy it over manually as it's not implemented.
+- If `/public` directory is needed in build output - copy it over manually as it's not implemented.
 
 ### Installation
 
