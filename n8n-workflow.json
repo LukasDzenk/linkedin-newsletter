@@ -1,0 +1,444 @@
+{
+    "name": "LinkedIn Newsletter",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "cfbbcf59-763d-4f3b-acf0-dee4d784c24a",
+        "name": "When clicking ‘Test workflow’"
+      },
+      {
+        "parameters": {
+          "person": "MYIA6HpfBc",
+          "text": "={{ $input.last().json.summary.text }}",
+          "shareMediaCategory": "IMAGE",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.linkedIn",
+        "typeVersion": 1,
+        "position": [
+          2260,
+          0
+        ],
+        "id": "ea6d8ce1-8ffe-457d-a7e9-21dc264aa00e",
+        "name": "LinkedIn",
+        "alwaysOutputData": true,
+        "executeOnce": true,
+        "credentials": {
+          "linkedInOAuth2Api": {
+            "id": "OfqpgmbLcVnCFQxz",
+            "name": "LinkedIn account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 10 * * TUE"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          -160
+        ],
+        "id": "f8f78e20-29da-4029-b055-9e47af8b106e",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "content": "Optional: send notification about new post to Slack/Email"
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          2160,
+          -240
+        ],
+        "typeVersion": 1,
+        "id": "8d1c9eeb-1da0-4084-92ae-4ea617206878",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://linkedin-newsletter.scalestay.com/api/v1/summaries",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n    \"isMockEnabled\": false,\n    \"dateFrom\": \"{{ $now.minus(7, 'days').toUTC() }}\",\n    \"totalVideosCount\": 20,\n    \"topics\": [\n        \"AI\",\n        \"healthcare\",\n        \"business (software related)\",\n        \"consulting\"\n    ],\n    \"channelUrls\": [\n        \"https://www.tiktok.com/@nate.b.jones\",\n        \"https://www.tiktok.com/@askcatgpt\",\n        \"https://www.tiktok.com/@drift0rtv\"\n    ]\n}",
+          "options": {
+            "timeout": 300000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          260,
+          0
+        ],
+        "id": "9702d3dd-1c6a-486b-847c-446435573b43",
+        "name": "HTTP Request",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "bFqWOHSwO8ZkFzKm",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "fileFolder",
+          "returnAll": true,
+          "filter": {
+            "folderId": {
+              "__rl": true,
+              "value": "14QFKUg_y5ogmgEJlpU9JmnGLPmhbpvBp",
+              "mode": "list",
+              "cachedResultName": "linkedin-newsletter",
+              "cachedResultUrl": "https://drive.google.com/drive/folders/14QFKUg_y5ogmgEJlpU9JmnGLPmhbpvBp"
+            }
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          220,
+          240
+        ],
+        "id": "d1e431a5-ddc0-4071-9eba-08c3d8061a56",
+        "name": "Get all images from Google Drive folder",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "f19z51aNiXikDQPz",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.id }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          1080,
+          240
+        ],
+        "id": "dccaa2f1-6184-4d74-979b-85dcd01fca24",
+        "name": "Download image",
+        "alwaysOutputData": true,
+        "executeOnce": true,
+        "retryOnFail": true,
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "f19z51aNiXikDQPz",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $('Get all images from Google Drive folder').item.json.id }}",
+            "mode": "id"
+          },
+          "newUpdatedFileName": "=used_at_{{ $now }}_{{ $('Get all images from Google Drive folder').item.json.name }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          2260,
+          240
+        ],
+        "id": "7f8363e8-58ab-4650-887f-774787da839c",
+        "name": "Mark image as used",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "f19z51aNiXikDQPz",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "39b5d2f0-e81e-4774-920b-03033f37f8d6",
+                "leftValue": "={{ $json.name }}",
+                "rightValue": "used_at",
+                "operator": {
+                  "type": "string",
+                  "operation": "notContains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          500,
+          240
+        ],
+        "id": "159fd528-2af1-4048-9179-af92371b1627",
+        "name": "Filter"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          780,
+          240
+        ],
+        "id": "7439cf7f-370f-4b35-bd29-90309a8ea699",
+        "name": "Limit"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3,
+        "position": [
+          1300,
+          0
+        ],
+        "id": "c7ce1c8d-ed56-4157-89d6-dd076466b8c3",
+        "name": "Merge"
+      },
+      {
+        "parameters": {
+          "resume": "form",
+          "formTitle": "manual check",
+          "formDescription": "={{ $input.last().json.summary.text }}",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "Confirm?",
+                "fieldType": "dropdown",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Confirm"
+                    },
+                    {
+                      "option": "Reject"
+                    }
+                  ]
+                },
+                "multiselect": true,
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          1580,
+          0
+        ],
+        "id": "687d9244-b33c-42ed-8430-9bcf91ad63bb",
+        "name": "Wait",
+        "webhookId": "ebdcf9e9-a7d9-4c7d-bbaf-dfa0b9e46ac2"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "dfaed700-e3ef-4b5b-93ac-d8cc70f5b8ba",
+                "leftValue": "={{ $json[\"Confirm?\"][0] }}",
+                "rightValue": "Reject",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1860,
+          0
+        ],
+        "id": "2f2439a2-5b71-4029-b6cd-b899dd37648b",
+        "name": "If"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "When clicking ‘Test workflow’": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get all images from Google Drive folder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LinkedIn": {
+        "main": [
+          []
+        ]
+      },
+      "Get all images from Google Drive folder": {
+        "main": [
+          [
+            {
+              "node": "Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download image": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter": {
+        "main": [
+          [
+            {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
+              "node": "Download image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          []
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "LinkedIn",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Mark image as used",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "8a622754-16f4-456d-a31b-45281c5fd8b5",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "1242089e09357a9813ccd9c5a61cc7120d581cc0e7ddec6dc717988a647bce32"
+    },
+    "id": "rSMMIo00EclLKYZ7",
+    "tags": []
+  }
